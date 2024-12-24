@@ -2,14 +2,17 @@ services:
   db:
     image: mariadb:10.4
     restart: unless-stopped
+    tty: true
     volumes:
       - db:/var/lib/mysql
     env_file:
       - stack.env
 
   mpcc:
-    image: ghcr.io/mprov-ng/mprov-control-center:dev
+    # image: ghcr.io/mprov-ng/mprov-control-center:dev
+    image: localhost/mprov-control-center:dev
     restart: unless-stopped
+    tty: true
     depends_on:
       db:
     volumes: 
@@ -19,13 +22,16 @@ services:
     ports:
      - 80:80
      - 443:443
+    hostname: ${MPROV_MPCC_HOSTNAME}
     command: sh -c '/wait-for-it.sh -t 0 db:3306 -- /var/www/mprov_control_center/install_scripts/init_mpcc.sh -d'
-
+    
   jobserver:
-    image: ghcr.io/mprov-ng/mprov-jobserver:dev
+    # image: ghcr.io/mprov-ng/mprov-jobserver:dev
+    image: localhost/mprov-jobserver:dev
     restart: unless-stopped
     systemd: true
     network_mode: host
+    tty: true
     volumes:
       - /home/export:/export
       - /sys/fs/cgroup:/sys/fs/cgroup:ro
@@ -33,7 +39,7 @@ services:
       - stack.env
     user: ${UID:-0}:${GID:-0}
     privileged: true
-    hostname: mprov-jobserver01
+    hostname: ${MPROV_JOBSERVER_HOSTNAME}
 
 
 volumes:
