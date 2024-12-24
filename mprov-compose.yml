@@ -9,8 +9,8 @@ services:
       - stack.env
 
   mpcc:
-    # image: ghcr.io/mprov-ng/mprov-control-center:dev
-    image: localhost/mprov-control-center:dev
+    image: ghcr.io/mprov-ng/mprov-control-center:dev
+    # image: localhost/mprov-control-center:dev
     restart: unless-stopped
     tty: true
     depends_on:
@@ -27,8 +27,8 @@ services:
     command: sh -c '/wait-for-it.sh -t 0 db:3306 -- /var/www/mprov_control_center/install_scripts/init_mpcc.sh -d'
     
   jobserver:
-    # image: ghcr.io/mprov-ng/mprov-jobserver:dev
-    image: localhost/mprov-jobserver:dev
+    image: ghcr.io/mprov-ng/mprov-jobserver:dev
+    # image: localhost/mprov-jobserver:dev
     restart: unless-stopped
     depends_on:
       mpcc:
