@@ -3,7 +3,10 @@ A docker/podman compose file to start up an entire mprov stack on a single node.
 
 
 Pacakge Dependencies
+text editor (vim)
+tmux or screen
 epel-release
+git
 netavark
 podman
 podman-compose
