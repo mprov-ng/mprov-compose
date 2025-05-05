@@ -10,12 +10,14 @@ services:
 
   mpcc:
     image: ghcr.io/mprov-ng/mprov-control-center:dev
-    # image: localhost/mprov-control-center:dev
+    #image: localhost/mprov-control-center:dev
     restart: unless-stopped
     tty: true
     depends_on:
       db:
+        condition: service_started
     volumes: 
+      - /root/mprov_control_center:/var/www/mprov_control_center
       - mpcc-media:/var/www/mprov_control_center/media
       - mprov-conf:/etc/mprov/
     env_file:
@@ -29,16 +31,18 @@ services:
   jobserver:
     image: ghcr.io/mprov-ng/mprov-jobserver:dev
     # image: localhost/mprov-jobserver:dev
+    cgroup: host
     restart: unless-stopped
     depends_on:
       mpcc:
-    systemd: true
+        condition: service_started
+        #systemd: true
     network_mode: host
     tty: true
     volumes:
       - mprov-conf:/etc/mprov/
       - /home/export:/export
-      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+      - /sys/fs/cgroup:/sys/fs/cgroup
     env_file:
       - stack.env
     user: ${UID:-0}:${GID:-0}
