@@ -17,7 +17,8 @@ services:
       db:
         condition: service_started
     volumes: 
-      - /root/mprov_control_center:/var/www/mprov_control_center
+    # for dev only.
+    #- /root/mprov_control_center:/var/www/mprov_control_center
       - mpcc-media:/var/www/mprov_control_center/media
       - mprov-conf:/etc/mprov/
     env_file:
