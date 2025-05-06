@@ -11,3 +11,15 @@ Pacakge Dependencies:
 - epel-release
 - git
 - docker-ce
+
+General installation instructions:
+```
+- install docker-ce 
+  - https://docs.docker.com/engine/install/rhel/
+- git clone https://github.com/mprov-ng/mprov-compose.git
+- cd mprov-compose
+- edit stack.env
+- docker compose -f mprov-compose.yaml --env-file stack.env
+< go have a sandwich >
+- http://ipaddress/admin/ to login 
+```
