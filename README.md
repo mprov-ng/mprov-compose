@@ -19,7 +19,7 @@ General installation instructions:
 - git clone https://github.com/mprov-ng/mprov-compose.git
 - cd mprov-compose
 - edit stack.env
-- docker compose -f mprov-compose.yaml --env-file stack.env
+- docker compose -f mprov-compose.yml -d --env-file stack.env up
 < go have a sandwich >
 - http://ipaddress/admin/ to login 
 ```
