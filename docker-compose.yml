@@ -1,6 +1,6 @@
 services:
   db:
-    image: mariadb:10.4
+    image: mariadb:10.11
     restart: unless-stopped
     tty: true
     user: "995:994"
@@ -8,6 +8,7 @@ services:
       - 3306:3306
     volumes:
       - /var/lib/mysql:/var/lib/mysql
+      - /etc/mysql/conf.d/:/etc/mysql/conf.d
     env_file:
       - .env
 
