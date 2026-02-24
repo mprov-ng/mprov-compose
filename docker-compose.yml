@@ -3,10 +3,13 @@ services:
     image: mariadb:10.4
     restart: unless-stopped
     tty: true
+    user: "995:994"
+    ports:
+      - 3306:3306
     volumes:
-      - db:/var/lib/mysql
+      - /var/lib/mysql:/var/lib/mysql
     env_file:
-      - stack.env
+      - .env
 
   mpcc:
     image: ghcr.io/mprov-ng/mprov-control-center:dev
@@ -23,15 +26,21 @@ services:
       db:
         condition: service_started
     volumes: 
-    # for dev only.
-    #- /root/mprov_control_center:/var/www/mprov_control_center
-      - mpcc-media:/var/www/mprov_control_center/media
+      # for dev only, Documentation Pending.
+      #  General steps:
+      #    - start the stack with this commented out.
+      #    - run `docker cp mprov-compose-mpcc-1:/var/www/mprov_control_center /root/mprov_control_cetner`
+      #    - once all the jobserver jobs complete, down the stack
+      #    - uncomment this line.
+      #    - PROFIT!
+      - /root/mprov_control_center:/var/www/mprov_control_center
+      #- mpcc-media:/var/www/mprov_control_center/media
       - mprov-conf:/etc/mprov/
     env_file:
-     - stack.env
+     - .env
     ports:
-     - 80:80
-     - 443:443
+     - 8000:80
+     - 4343:443
     hostname: ${MPROV_MPCC_HOSTNAME}
     command: sh -c '/wait-for-it.sh -t 0 db:3306 -- /var/www/mprov_control_center/install_scripts/init_mpcc.sh -d'
     
@@ -51,17 +60,19 @@ services:
       - mprov-conf:/etc/mprov/
       - /export:/export
       - /sys/fs/cgroup:/sys/fs/cgroup
+      - /etc/genders:/etc/genders
+      - /var/lib/mprov:/var/lib/mprov
     env_file:
-      - stack.env
+      - .env
     user: ${UID:-0}:${GID:-0}
     privileged: true
     hostname: ${MPROV_JOBSERVER_HOSTNAME}
-    # we wait for localhost here because we are host networking and all services are running from the same stack.
+    # we wait for localhost here because we are host networking and all services are running from the same .
     command: sh -c '/wait-for-it.sh -t 0 localhost:80 -- /sbin/init'
 
 
 volumes:
   mprov-conf:
-  db:
-  mpcc-media:
+  # db:
+  # mpcc-media:
 
