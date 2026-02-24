@@ -18,9 +18,9 @@ General installation instructions:
   - https://docs.docker.com/engine/install/rhel/
 - git clone https://github.com/mprov-ng/mprov-compose.git
 - cd mprov-compose
-- copy stack.env.dist to stack.env
-- edit stack.env
-- docker compose -f mprov-compose.yml -d --env-file stack.env up
+- copy stack.env.dist to .env
+- edit .env
+- docker compose -f mprov-compose.yml -d --env-file .env up
 < go have a sandwich >
 - http://ipaddress/admin/ to login 
 ```
