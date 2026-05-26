@@ -34,14 +34,14 @@ services:
       #    - once all the jobserver jobs complete, down the stack
       #    - uncomment this line.
       #    - PROFIT!
-      - /root/mprov_control_center:/var/www/mprov_control_center
+      #- /root/mprov_control_center:/var/www/mprov_control_center
       #- mpcc-media:/var/www/mprov_control_center/media
       - mprov-conf:/etc/mprov/
     env_file:
      - .env
     ports:
-     - 8000:80
-     - 4343:443
+     - 80:80
+     - 443:443
     hostname: ${MPROV_MPCC_HOSTNAME}
     command: sh -c '/wait-for-it.sh -t 0 db:3306 -- /var/www/mprov_control_center/install_scripts/init_mpcc.sh -d'
     
