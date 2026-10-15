@@ -35,7 +35,10 @@ services:
       #    - uncomment this line.
       #    - PROFIT!
       #- /root/mprov_control_center:/var/www/mprov_control_center
-      #- mpcc-media:/var/www/mprov_control_center/media
+      #
+      # Change this to a bind mount if you want to see it outside the container and remove
+      # the volume at the end of the file.
+      - mpcc-media:/var/www/mprov_control_center/media
       - mprov-conf:/etc/mprov/
     env_file:
      - .env
@@ -75,5 +78,5 @@ services:
 volumes:
   mprov-conf:
   # db:
-  # mpcc-media:
+  mpcc-media:
 
