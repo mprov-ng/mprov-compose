@@ -23,6 +23,9 @@ services:
       interval: 10s
       timeout: 10s
       retries: 8
+      # the first start migrates and loads a new database before Apache is up
+      # (~95 s on a small VM); failed checks don't count until this is over.
+      start_period: 300s
     depends_on:
       db:
         condition: service_started
