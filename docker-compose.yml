@@ -4,13 +4,19 @@ services:
     restart: unless-stopped
     tty: true
     user: "995:994"
-    ports:
-      - 3306:3306
+    # The mPCC reaches the database as db:3306 over the compose network, so
+    # the port isn't published.  For local access from the host only, use:
+    #ports:
+    #  - 127.0.0.1:3306:3306
     volumes:
       - /var/lib/mysql:/var/lib/mysql
       - /etc/mysql/conf.d/:/etc/mysql/conf.d
     env_file:
       - .env
+    environment:
+      # refuse to start with an unset or empty password (#6)
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
 
   mpcc:
     image: ghcr.io/mprov-ng/mprov-control-center:dev
@@ -45,6 +51,8 @@ services:
       - mprov-conf:/etc/mprov/
     env_file:
      - .env
+    environment:
+      DB_PASS: ${DB_PASS:?set DB_PASS in .env (the same value as MYSQL_PASSWORD)}
     ports:
      - 80:80
      - 443:443
