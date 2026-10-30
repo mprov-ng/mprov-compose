@@ -1,0 +1,50 @@
+name: Compose config
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  config:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      # Only renders the compose file: nothing is pulled or started.
+      - name: Check docker-compose.yml with stack.env.dist
+        run: |
+          set -u
+          passwords="MYSQL_ROOT_PASSWORD MYSQL_PASSWORD DB_PASS"
+
+          # make_env <empty var>: .env from the template with every DB
+          # password set to a dummy value except the one named.
+          make_env() {
+            local p
+            cp stack.env.dist .env
+            for p in $passwords; do
+              [ "$p" = "$1" ] || sed -i "s/^$p=\$/$p=ci-dummy/" .env
+            done
+          }
+
+          make_env none
+          docker compose config --quiet
+          echo "OK: config renders with all DB passwords set"
+
+          # the stack must refuse to start with an empty password (#6)
+          failed=0
+          for v in $passwords; do
+            make_env "$v"
+            if out=$(docker compose config --quiet 2>&1); then
+              echo "::error::docker compose config accepted an empty $v"
+              failed=1
+            elif ! grep -q "set $v in .env" <<<"$out"; then
+              echo "::error::empty $v failed for another reason: $out"
+              failed=1
+            else
+              echo "OK: empty $v refused"
+            fi
+          done
+          exit $failed
