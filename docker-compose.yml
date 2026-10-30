@@ -39,7 +39,7 @@ services:
       # for dev only, Documentation Pending.
       #  General steps:
       #    - start the stack with this commented out.
-      #    - run `docker cp mprov-compose-mpcc-1:/var/www/mprov_control_center /root/mprov_control_cetner`
+      #    - run `docker cp mprov-compose-mpcc-1:/var/www/mprov_control_center /root/mprov_control_center`
       #    - once all the jobserver jobs complete, down the stack
       #    - uncomment this line.
       #    - PROFIT!
