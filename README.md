@@ -20,10 +20,21 @@ General installation instructions:
 - cd mprov-compose
 - copy stack.env.dist to .env
 - edit .env (set the database passwords first; the stack won't start without them)
+- sudo touch /etc/genders
+- sudo install -d /export /var/lib/mprov
 - docker compose --env-file .env up -d
 < go have a sandwich >
 - http://ipaddress/admin/ to login as admin (see "The admin password" below)
 ```
+
+The job server bind-mounts `/etc/genders`, `/export` and `/var/lib/mprov` from
+the host, so other host-side tooling can see them outside the container. On a
+fresh host none of those exist yet, and Docker creates a missing bind-mount
+path itself before the container starts — for a file like `/etc/genders` it
+creates a **directory** instead, which breaks libgenders. Run the `touch`/
+`install -d` commands above once before the first `up` to avoid that.
+(`/var/lib/mysql` doesn't need this: it's a named Docker volume, not a bind
+mount, so the `db` container's own entrypoint initializes it correctly.)
 
 ## The admin password
 
@@ -56,3 +67,29 @@ before the first start (it's commented out in `stack.env.dist`):
 
 If the database is emptied but the `mprov-conf` volume is kept, the next
 first start reuses the saved password.
+
+## Upgrading an existing install off the old `/var/lib/mysql` bind mount
+
+Before this fix ([#15](https://github.com/mprov-ng/mprov-compose/issues/15)),
+`db`'s data lived in a bind mount at `/var/lib/mysql` on the host. It's now a
+named Docker volume (`db-data`) instead, so the database's own entrypoint can
+initialize and own it correctly on a fresh host. If you have an existing
+install using the old bind mount, migrate its data into the new volume before
+pulling this change:
+
+```
+docker compose down
+docker volume create mprov-compose_db-data
+docker run --rm \
+  -v /var/lib/mysql:/from \
+  -v mprov-compose_db-data:/to \
+  alpine sh -c 'cp -a /from/. /to/'
+git pull
+docker compose --env-file .env up -d
+```
+
+Adjust the volume name (`mprov-compose_db-data`) to match your compose
+project name if you don't use the directory-derived default — check with
+`docker volume ls`. Once you've confirmed the stack comes up and the data is
+intact, the old `/var/lib/mysql` directory on the host is no longer used and
+can be removed.
