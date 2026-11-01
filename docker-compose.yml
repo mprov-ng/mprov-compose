@@ -3,13 +3,17 @@ services:
     image: mariadb:10.11
     restart: unless-stopped
     tty: true
-    user: "995:994"
+    # No user: override here: the image's own entrypoint runs as root on a
+    # fresh start to initialize and chown the data directory, then drops
+    # privileges itself. Overriding it (previously "995:994") skipped that
+    # init step, so a bind-mounted /var/lib/mysql (created root-owned by
+    # Docker on a fresh host) was never writable by mariadbd (#15).
     # The mPCC reaches the database as db:3306 over the compose network, so
     # the port isn't published.  For local access from the host only, use:
     #ports:
     #  - 127.0.0.1:3306:3306
     volumes:
-      - /var/lib/mysql:/var/lib/mysql
+      - db-data:/var/lib/mysql
       - /etc/mysql/conf.d/:/etc/mysql/conf.d
     env_file:
       - .env
@@ -88,6 +92,6 @@ services:
 
 volumes:
   mprov-conf:
-  # db:
+  db-data:
   mpcc-media:
 
