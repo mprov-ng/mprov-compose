@@ -53,6 +53,11 @@ services:
       # the volume at the end of the file.
       - mpcc-media:/var/www/mprov_control_center/media
       - mprov-conf:/etc/mprov/
+      # mprov_backup's output directory (mprov-ng/mprov_control_center#457).
+      # Its own named volume, not a bind mount of the host's /var/lib/mprov:
+      # the job server bind-mounts that whole host directory for its own
+      # unrelated data, so the two would collide.
+      - mpcc-backups:/var/lib/mprov/backups
     env_file:
      - .env
     environment:
@@ -94,4 +99,5 @@ volumes:
   mprov-conf:
   db-data:
   mpcc-media:
+  mpcc-backups:
 
