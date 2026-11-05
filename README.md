@@ -68,6 +68,37 @@ before the first start (it's commented out in `stack.env.dist`):
 If the database is emptied but the `mprov-conf` volume is kept, the next
 first start reuses the saved password.
 
+## Backups
+
+The mPCC writes backups to `/var/lib/mprov/backups`, which is the
+`mpcc-backups` volume in `docker-compose.yml`, so they survive the container
+being recreated — which is what an upgrade does
+([mprov-ng/mprov_control_center#457](https://github.com/mprov-ng/mprov_control_center/issues/457)).
+To take one and copy it out to the host:
+
+```
+docker compose exec mpcc bash -c 'cd /var/www/mprov_control_center && . bin/activate && \
+  python manage.py mprov_backup'
+docker compose cp mpcc:/var/lib/mprov/backups ./mprov-backups
+```
+
+Keep copying backups off the host as well: a named volume lives on the same
+machine as the stack, so it doesn't survive losing that machine.
+
+`mprov_restore` loads a backup back in. Backups hold users, API keys and
+systems with their BMC credentials, so treat the copies as secrets — the mPCC
+refuses to write them under `media/` or `static/`, which the web server
+serves.
+
+The mPCC image creates `/var/lib/mprov/backups` as mode `700`. If you created
+the `mpcc-backups` volume with an mPCC older than 0.6.3, where that directory
+didn't exist yet, Docker made it `755` instead and the mode isn't re-applied
+when you upgrade. Tighten it once if so:
+
+```
+docker compose exec mpcc chmod 700 /var/lib/mprov/backups
+```
+
 ## Upgrading an existing install off the old `/var/lib/mysql` bind mount
 
 Before this fix ([#15](https://github.com/mprov-ng/mprov-compose/issues/15)),
