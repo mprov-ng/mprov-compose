@@ -147,12 +147,16 @@ brings the new defaults:
 - Nothing else in `/etc/mprov` is touched: not the mPCC's keys and
   passwords, and not files of your own there.
 
-The job server logs what it changed at start, in `container-config:` lines.
-After upgrading, check for files to merge:
+After upgrading, see what the job server changed and look for `.new` and
+`.bak` files to deal with:
 
 ```
+docker compose logs jobserver | grep container-config
 docker compose exec jobserver ls /etc/mprov /etc/mprov/plugins
 ```
+
+It only logs when it changes or keeps something, so a start with nothing to
+do prints no `container-config` lines.
 
 A job server older than 0.7.0 only gets these files when Docker first seeds
 the empty volume. Start the whole stack with one `up -d`, as above. An
