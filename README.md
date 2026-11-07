@@ -99,6 +99,29 @@ when you upgrade. Tighten it once if so:
 docker compose exec mpcc chmod 700 /var/lib/mprov/backups
 ```
 
+### The mPCC's CA and HTTPS certificate
+
+From mPCC 0.7.0 the mPCC makes its own certificate authority (CA) and an
+HTTPS certificate signed by it at first start, in `/var/lib/mprov/tls` — the
+`mpcc-tls` volume in `docker-compose.yml`
+([mprov-ng/mprov_control_center#381](https://github.com/mprov-ng/mprov_control_center/issues/381)).
+The volume keeps them across an upgrade; with an older mPCC it stays empty.
+
+`mprov_backup` doesn't cover this directory. It saves the records of the
+credentials the CA has issued, but not the CA itself (`ca.key`, `ca.crt`).
+Once the mPCC issues job server and node credentials, losing the volume means
+a new CA, and none of those credentials work any more. So copy it off the host
+along with your backups, and treat the copy as a secret — `ca.key` is the CA's
+private key:
+
+```
+docker compose cp mpcc:/var/lib/mprov/tls ./mprov-tls
+```
+
+To serve your own HTTPS certificate instead, mount it into the `mpcc` service
+and set `MPROV_TLS_CERT` and `MPROV_TLS_KEY` in `.env` (see `stack.env.dist`).
+The CA is still made and still needs keeping.
+
 ## Upgrading an existing install off the old `/var/lib/mysql` bind mount
 
 Before this fix ([#15](https://github.com/mprov-ng/mprov-compose/issues/15)),
