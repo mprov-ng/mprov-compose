@@ -23,7 +23,10 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:?set MYSQL_PASSWORD in .env}
 
   mpcc:
-    image: ghcr.io/mprov-ng/mprov-control-center:dev
+    # Pinned to a release, the same major.minor as the job server below: the
+    # mPCC refuses a job server on another major.minor (426).  Upgrade both
+    # together; see "Image versions" in the README.
+    image: ghcr.io/mprov-ng/mprov-control-center:v0.6.3
     #image: localhost/mprov-control-center:dev
     restart: unless-stopped
     pull_policy: always
@@ -74,7 +77,8 @@ services:
     command: sh -c '/wait-for-it.sh -t 0 db:3306 -- /var/www/mprov_control_center/install_scripts/init_mpcc.sh -d'
     
   jobserver:
-    image: ghcr.io/mprov-ng/mprov-jobserver:latest
+    # Pinned to a release that matches the mPCC's major.minor (see above).
+    image: ghcr.io/mprov-ng/mprov-jobserver:v0.6.2
     # image: localhost/mprov-jobserver:dev
     cgroup: host
     restart: unless-stopped

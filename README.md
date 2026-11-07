@@ -36,6 +36,32 @@ creates a **directory** instead, which breaks libgenders. Run the `touch`/
 (`/var/lib/mysql` doesn't need this: it's a named Docker volume, not a bind
 mount, so the `db` container's own entrypoint initializes it correctly.)
 
+## Image versions
+
+`docker-compose.yml` pins the mPCC and job server images to release tags, a
+pair from the same major.minor (e.g. mPCC `v0.6.3` with job server `v0.6.2`).
+They have to match: the mPCC refuses a job server from another major.minor
+with a `426`, and the job server won't run against it. The images used to
+track `:dev` and `:latest`, which pulled whatever had been built last and
+could pair an mPCC from one major.minor with a job server from another.
+
+To upgrade, pull the new compose file, which moves both tags together, then
+pull the images and recreate the containers:
+
+```
+git pull
+docker compose pull
+docker compose --env-file .env up -d
+```
+
+If you change the tags yourself, change both in the same edit, and keep them
+on the same major.minor.
+
+If your stack has already run the old `:dev` mPCC, its database may have
+migrations newer than the pinned release, and an older mPCC can't safely run
+against it. Keep `:dev` for the mPCC in your copy of `docker-compose.yml`
+until the next release catches up, rather than moving back.
+
 ## The admin password
 
 On its first start against an empty database, the mPCC creates the `admin`
