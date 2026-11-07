@@ -122,6 +122,57 @@ To serve your own HTTPS certificate instead, mount it into the `mpcc` service
 and set `MPROV_TLS_CERT` and `MPROV_TLS_KEY` in `.env` (see `stack.env.dist`).
 The CA is still made and still needs keeping.
 
+## The job server's config files
+
+The job server's config template (`jobserver.yaml.j2`) and plugin configs
+(`plugins/*.yaml`) live in `/etc/mprov`, on the `mprov-conf` volume it
+shares with the mPCC.
+
+From job server 0.7.0 it brings them up to date on every start
+([mprov-ng/mprov-compose#21](https://github.com/mprov-ng/mprov-compose/issues/21),
+[mprov-ng/mprov_jobserver#334](https://github.com/mprov-ng/mprov_jobserver/issues/334)),
+so the order the services are started in doesn't matter, and an upgrade
+brings the new defaults:
+
+- A missing file is installed, and one an earlier release shipped is
+  replaced, as long as you haven't edited it.
+- A plugin config you've edited is kept, and the new default is written
+  beside it as `<name>.yaml.new` (not loaded) for you to merge. The `.new`
+  goes away once your file matches the default again.
+- An edited `jobserver.yaml.j2` is replaced, and yours is kept as
+  `jobserver.yaml.j2.bak`. Set things through `.env` or
+  `plugins/local.yaml` instead of editing the template.
+- The plugin code (`*.py`) earlier job server images copied into
+  `/etc/mprov/plugins` is removed.
+- Nothing else in `/etc/mprov` is touched: not the mPCC's keys and
+  passwords, and not files of your own there.
+
+After upgrading, see what the job server changed and look for `.new` and
+`.bak` files to deal with:
+
+```
+docker compose logs jobserver | grep container-config
+docker compose exec jobserver ls /etc/mprov /etc/mprov/plugins
+```
+
+It only logs when it changes or keeps something, so a start with nothing to
+do prints no `container-config` lines.
+
+A job server older than 0.7.0 only gets these files when Docker first seeds
+the empty volume. Start the whole stack with one `up -d`, as above. An
+upgrade to an older release keeps the old template, so `MPROV_CA_BUNDLE`
+and `MPROV_LOG_LEVEL` do nothing. Don't delete the template to get a new one:
+the volume isn't empty any more, so nothing replaces it and the job server
+won't start. Copy the new image's template in instead:
+
+```
+docker compose pull jobserver
+docker run --rm --entrypoint cat ghcr.io/mprov-ng/mprov-jobserver:<new tag> /etc/mprov/jobserver.yaml.j2 > jobserver.yaml.j2.new
+docker compose up -d
+docker compose cp jobserver.yaml.j2.new jobserver:/etc/mprov/jobserver.yaml.j2
+docker compose restart jobserver
+```
+
 ## Upgrading an existing install off the old `/var/lib/mysql` bind mount
 
 Before this fix ([#15](https://github.com/mprov-ng/mprov-compose/issues/15)),
