@@ -26,7 +26,7 @@ services:
     # Pinned to a release, the same major.minor as the job server below: the
     # mPCC refuses a job server on another major.minor (426).  Upgrade both
     # together; see "Image versions" in the README.
-    image: ghcr.io/mprov-ng/mprov-control-center:v0.6.3
+    image: ghcr.io/mprov-ng/mprov-control-center:v0.7.0
     #image: localhost/mprov-control-center:dev
     restart: unless-stopped
     pull_policy: always
@@ -78,7 +78,7 @@ services:
     
   jobserver:
     # Pinned to a release that matches the mPCC's major.minor (see above).
-    image: ghcr.io/mprov-ng/mprov-jobserver:v0.6.2
+    image: ghcr.io/mprov-ng/mprov-jobserver:v0.7.0
     # image: localhost/mprov-jobserver:dev
     cgroup: host
     restart: unless-stopped

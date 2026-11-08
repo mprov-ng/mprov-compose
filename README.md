@@ -39,7 +39,7 @@ mount, so the `db` container's own entrypoint initializes it correctly.)
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.6.3` with job server `v0.6.2`).
+pair from the same major.minor (e.g. mPCC `v0.7.0` with job server `v0.7.0`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
