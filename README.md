@@ -106,13 +106,17 @@ Then, on the nodes' side:
 3. If you use a custom iPXE script, add `{{ boot.enroll }}` to it, or nodes
    booted with it can't enroll.
 4. Rebuild every image. An image built before 0.7.0 has the shared key in
-   it, and once the shared key is off, its nodes can't reach the mPCC.
+   it, and its nodes can't reach the mPCC while the key is refused.
 
-`MPROV_SHARED_KEY_MODE` (commented out in `stack.env.dist`) decides what the
-mPCC still does with the shared key: `off` refuses it, `nodes` accepts it
-only for what a node does about itself, for images not rebuilt yet, and `all`
-accepts it for everything, as before. Once every image is rebuilt, the key
-can be revoked under API Keys in the mPCC admin. 0.8.0 removes it.
+From 0.7.0 the mPCC refuses the shared key by default
+(`MPROV_SHARED_KEY_MODE=off`). Nodes still running an image built before
+0.7.0 lose access to the mPCC as soon as it's upgraded, until their image
+is rebuilt. To keep them working meanwhile, set `MPROV_SHARED_KEY_MODE=nodes`
+in `.env` (it's commented out in `stack.env.dist`): the mPCC then accepts the
+key only for what a node does about itself. `all` accepts it for everything,
+as before 0.7.0. Once every image is rebuilt, remove the line again, so the
+default `off` applies, and revoke the key under API Keys in the mPCC admin.
+0.8.0 removes it.
 
 ## The admin password
 
