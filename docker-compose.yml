@@ -95,6 +95,12 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup
       - /etc/genders:/etc/genders
       - /var/lib/mprov:/var/lib/mprov
+      # The job server's own key and certificate, from enrolling with the mPCC
+      # (job server 0.7.0 and later, mprov-ng/mprov_control_center#381).  A
+      # named volume over that path, so the key isn't in the host's
+      # /var/lib/mprov with the job server's other data.  Never mount mpcc-tls
+      # here: it holds the mPCC's CA key.
+      - jobserver-tls:/var/lib/mprov/tls
     env_file:
       - .env
     user: ${UID:-0}:${GID:-0}
@@ -110,4 +116,5 @@ volumes:
   mpcc-media:
   mpcc-backups:
   mpcc-tls:
+  jobserver-tls:
 

@@ -62,6 +62,58 @@ migrations newer than the pinned release, and an older mPCC can't safely run
 against it. Keep `:dev` for the mPCC in your copy of `docker-compose.yml`
 until the next release catches up, rather than moving back.
 
+## Upgrading to 0.7.0
+
+0.7.0 replaces the API key that the job server and every node shared with
+an identity of their own
+([mprov-ng/mprov_control_center#381](https://github.com/mprov-ng/mprov_control_center/issues/381)).
+The mPCC runs its own certificate authority (CA). The job server enrolls
+with it for a certificate the first time it starts. Nodes enroll as they
+boot. Image builds get a short-lived credential instead of the key.
+
+In this stack the job server enrolls by itself. The mPCC leaves a one-time
+enrollment token and its CA certificate in `/etc/mprov` (the `mprov-conf`
+volume), and the job server keeps its key and certificate on the
+`jobserver-tls` volume. Enrolling needs HTTPS, so before upgrading, edit
+`.env`:
+
+- Change `MPROV_URL` to `https://`, keeping the same address, which must be
+  one of `MPROV_MPCC_IPs`, e.g. `MPROV_URL=https://192.168.1.10/`. Nodes
+  still boot over plain HTTP: the job server gives iPXE an `http://` URL for
+  the same address.
+- Remove `MPROV_APIKEY`. In this stack the job server always took the key
+  from `/etc/mprov/apikey` instead, so the line did nothing.
+- Remove `MPROV_SKIP_VERSION_CHECK` if you set it. The mPCC and job server
+  are upgraded together here, and the check is what tells you when they
+  aren't.
+
+Then upgrade as in "Image versions" above, and check the job server
+enrolled:
+
+```
+docker compose logs jobserver | grep -i enroll
+```
+
+Then, on the nodes' side:
+
+1. Re-upload `setupBMC.py`, `register_IPv6_ll.py` and `localTempDisk.py`
+   from mprov_scripts into the mPCC's Scripts, **before** rebuilding any
+   image. An image built by a 0.7.0 job server has no system `python3`, so
+   an old copy of those scripts fails in it.
+2. Add `install_mprov_cert_renew.sh` to your images, so stateful nodes
+   renew their certificate before it expires. A fresh install has it in the
+   default compute image already.
+3. If you use a custom iPXE script, add `{{ boot.enroll }}` to it, or nodes
+   booted with it can't enroll.
+4. Rebuild every image. An image built before 0.7.0 has the shared key in
+   it, and once the shared key is off, its nodes can't reach the mPCC.
+
+`MPROV_SHARED_KEY_MODE` (commented out in `stack.env.dist`) decides what the
+mPCC still does with the shared key: `off` refuses it, `nodes` accepts it
+only for what a node does about itself, for images not rebuilt yet, and `all`
+accepts it for everything, as before. Once every image is rebuilt, the key
+can be revoked under API Keys in the mPCC admin. 0.8.0 removes it.
+
 ## The admin password
 
 On its first start against an empty database, the mPCC creates the `admin`
@@ -147,6 +199,27 @@ docker compose cp mpcc:/var/lib/mprov/tls ./mprov-tls
 To serve your own HTTPS certificate instead, mount it into the `mpcc` service
 and set `MPROV_TLS_CERT` and `MPROV_TLS_KEY` in `.env` (see `stack.env.dist`).
 The CA is still made and still needs keeping.
+
+### The job server's key and certificate
+
+From job server 0.7.0 the job server keeps the key and certificate it
+enrolled for in `/var/lib/mprov/tls`: the `jobserver-tls` volume, not the
+host's `/var/lib/mprov`. It renews the certificate by itself. There's no
+need to back the volume up: if it's lost, enroll the job server again. Make
+a new enrollment token, give it to the job server, and restart it:
+
+```
+docker compose exec mpcc bash -c 'cd /var/www/mprov_control_center && . bin/activate && \
+  python manage.py mprov_enroll_token'
+docker compose exec -T jobserver sh -c 'umask 077 && cat > /etc/mprov/enroll_token'
+docker compose restart jobserver
+```
+
+The second command reads the token from standard input: paste the value
+after `token:` from the first command's output, then press Ctrl-D. The token
+works once, within 24 hours. Then revoke the lost certificate in the mPCC
+admin, under Agent Identities → Agent Credentials ("Revoke selected
+credentials"), since its key is gone with the volume.
 
 ## The job server's config files
 
