@@ -80,19 +80,16 @@ services:
     # Pinned to a release that matches the mPCC's major.minor (see above).
     image: ghcr.io/mprov-ng/mprov-jobserver:v0.7.0
     # image: localhost/mprov-jobserver:dev
-    cgroup: host
     restart: unless-stopped
     pull_policy: always
     depends_on:
       mpcc:
         condition: service_healthy
-        #systemd: true
     network_mode: host
     tty: true
     volumes:
       - mprov-conf:/etc/mprov/
       - /export:/export
-      - /sys/fs/cgroup:/sys/fs/cgroup
       - /etc/genders:/etc/genders
       - /var/lib/mprov:/var/lib/mprov
       # The job server's own key and certificate, from enrolling with the mPCC
@@ -104,10 +101,13 @@ services:
     env_file:
       - .env
     user: ${UID:-0}:${GID:-0}
+    # The job server needs a privileged container: building an image
+    # bind-mounts /dev, /proc, /run and /sys into it, chroots into it, and
+    # makes device nodes there; reading a disk-image base runs libguestfs,
+    # which uses /dev/kvm; and its dnsmasq serves DHCP and TFTP on the
+    # host's network.
     privileged: true
     hostname: ${MPROV_JOBSERVER_HOSTNAME}
-    # we wait for localhost here because we are host networking and all services are running from the same .
-    command: sh -c '/wait-for-it.sh -t 0 localhost:80 -- /sbin/init'
 
 
 volumes:
