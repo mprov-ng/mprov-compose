@@ -26,7 +26,7 @@ services:
     # Pinned to a release, the same major.minor as the job server below: the
     # mPCC refuses a job server on another major.minor (426).  Upgrade both
     # together; see "Image versions" in the README.
-    image: ghcr.io/mprov-ng/mprov-control-center:v0.6.3
+    image: ghcr.io/mprov-ng/mprov-control-center:v0.7.0
     #image: localhost/mprov-control-center:dev
     restart: unless-stopped
     pull_policy: always
@@ -78,7 +78,7 @@ services:
     
   jobserver:
     # Pinned to a release that matches the mPCC's major.minor (see above).
-    image: ghcr.io/mprov-ng/mprov-jobserver:v0.6.2
+    image: ghcr.io/mprov-ng/mprov-jobserver:v0.7.0
     # image: localhost/mprov-jobserver:dev
     cgroup: host
     restart: unless-stopped
@@ -95,6 +95,12 @@ services:
       - /sys/fs/cgroup:/sys/fs/cgroup
       - /etc/genders:/etc/genders
       - /var/lib/mprov:/var/lib/mprov
+      # The job server's own key and certificate, from enrolling with the mPCC
+      # (job server 0.7.0 and later, mprov-ng/mprov_control_center#381).  A
+      # named volume over that path, so the key isn't in the host's
+      # /var/lib/mprov with the job server's other data.  Never mount mpcc-tls
+      # here: it holds the mPCC's CA key.
+      - jobserver-tls:/var/lib/mprov/tls
     env_file:
       - .env
     user: ${UID:-0}:${GID:-0}
@@ -110,4 +116,5 @@ volumes:
   mpcc-media:
   mpcc-backups:
   mpcc-tls:
+  jobserver-tls:
 
