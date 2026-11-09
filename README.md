@@ -36,6 +36,41 @@ creates a **directory** instead, which breaks libgenders. Run the `touch`/
 (`/var/lib/mysql` doesn't need this: it's a named Docker volume, not a bind
 mount, so the `db` container's own entrypoint initializes it correctly.)
 
+## Setting up the provisioning network
+
+Nodes network-boot from the job server, and they find it **by name**. The
+job server tells iPXE to `chain tftp://<job server hostname>/menu.ipxe`,
+where the hostname is the job server container's own, `MPROV_JOBSERVER_HOSTNAME`
+in `.env`. A node that can't resolve that name stops at that line, then
+PXE-boots again, over and over.
+
+The job server's dnsmasq can answer for its own name, but only if the
+provisioning network is set up for it in the mPCC. Under Networks, on the
+network the nodes boot from, set:
+
+- **Enable DHCP Server?** and **Enable Network Booting?** on, and a
+  **DHCP Range Start** and **DHCP Range End**.
+- **Manage DNS?** on. The job server only publishes its own name in a
+  network's DNS when this is on.
+- **Primary Nameserver** to the job server's address on that network.
+- **Domain Name**. DHCP hands out the domain only when a Primary Nameserver
+  is set too, and nodes need that domain to look up the job server's bare
+  hostname.
+
+The job server uses host networking, so it serves only networks where the
+host itself has an address. The host needs an interface with an address in
+that network's subnet, and that address is the one to use for
+**Primary Nameserver**.
+
+If the network's DNS comes from a nameserver of your own instead, leave
+**Manage DNS?** off and point **Primary Nameserver** at that server. That
+server then has to resolve `MPROV_JOBSERVER_HOSTNAME`, under the network's
+**Domain Name**, to the job server's address on the provisioning network.
+
+To check, boot a node and watch its console. It should load
+`tftp://<job server hostname>/menu.ipxe` and carry on booting, not go back
+to PXE.
+
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
