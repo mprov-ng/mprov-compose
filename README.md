@@ -69,7 +69,16 @@ an identity of their own
 ([mprov-ng/mprov_control_center#381](https://github.com/mprov-ng/mprov_control_center/issues/381)).
 The mPCC runs its own certificate authority (CA). The job server enrolls
 with it for a certificate the first time it starts. Nodes enroll as they
-boot. Image builds get a short-lived credential instead of the key.
+boot. Image builds get a short-lived credential instead of the key. The
+[mPCC](https://github.com/mprov-ng/mprov_control_center/releases/tag/v0.7.0)
+and [job server](https://github.com/mprov-ng/mprov_jobserver/releases/tag/v0.7.0)
+release notes have the full list of changes; this section covers what
+upgrading this stack takes.
+
+Take a backup first (see "Backups" below) and copy it off the host. The
+mPCC's first 0.7.0 start converts any database tables still on an old
+character set to utf8mb4 in place, before migrating, and on a large
+database that can take several minutes.
 
 In this stack the job server enrolls by itself. The mPCC leaves a one-time
 enrollment token and its CA certificate in `/etc/mprov` (the `mprov-conf`
@@ -96,10 +105,14 @@ docker compose logs jobserver | grep -i enroll
 
 Then, on the nodes' side:
 
-1. Re-upload `setupBMC.py`, `register_IPv6_ll.py` and `localTempDisk.py`
-   from mprov_scripts into the mPCC's Scripts, **before** rebuilding any
-   image. An image built by a 0.7.0 job server has no system `python3`, so
-   an old copy of those scripts fails in it.
+1. Re-upload `install_mprov_script-runner.sh`, `setupBMC.py`,
+   `register_IPv6_ll.py`, `localTempDisk.py` and `report_booted.py` from
+   mprov_scripts into the mPCC's Scripts, **before** rebuilding any image.
+   An image built by a 0.7.0 job server has no system `python3`, so an old
+   copy of those scripts fails in it. Don't add `install_mprov_jobserver.sh`
+   to an ordinary compute image: it's only for an image that runs as a
+   second job server, and it reinstalls the job server from PyPI over the
+   one the image already has.
 2. Add `install_mprov_cert_renew.sh` to your images, so stateful nodes
    renew their certificate before it expires. A fresh install has it in the
    default compute image already.
