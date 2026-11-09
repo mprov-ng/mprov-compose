@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.0` with job server `v0.7.0`).
+pair from the same major.minor (e.g. mPCC `v0.7.1` with job server `v0.7.1`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -165,6 +165,36 @@ key only for what a node does about itself. `all` accepts it for everything,
 as before 0.7.0. Once every image is rebuilt, remove the line again, so the
 default `off` applies, and revoke the key under API Keys in the mPCC admin.
 0.8.0 removes it.
+
+## Upgrading to 0.7.1
+
+0.7.1 is a bug-fix release: nodes enroll more reliably when a whole fleet
+boots at once, and a few enrollment and recovery problems are fixed. The
+[mPCC](https://github.com/mprov-ng/mprov_control_center/releases/tag/v0.7.1)
+and [job server](https://github.com/mprov-ng/mprov_jobserver/releases/tag/v0.7.1)
+release notes have the details. If you're coming from before 0.7.0, do
+"Upgrading to 0.7.0" above first.
+
+Nothing in `.env` has to change. Upgrade as in "Image versions" above.
+
+The mPCC now starts one Apache mod_wsgi process per CPU, from 2 to 8.
+To choose the number yourself, set `MPROV_WSGI_PROCESSES` in `.env` (it's
+commented out in `stack.env.dist`).
+
+Then, on the nodes' side:
+
+1. Re-upload `localTempDisk.py`, `register_IPv6_ll.py`, `report_booted.py`
+   and `setupBMC.py` from mprov_scripts into the mPCC's Scripts. The copies
+   a 0.7.0 install came with still report themselves as 0.6, so the mPCC
+   logs a version-mismatch warning for every call they make. A fresh 0.7.1
+   install has the current ones already.
+2. Rebuild your images. A node whose certificate was revoked now picks up
+   a "Let these systems re-enroll" window at its next renewal check, but
+   only from an image built by 0.7.1. On a stateful node that's already
+   installed, update `/usr/libexec/mprov/mprov_enroll.py` instead.
+
+The other node-side fixes come from the mPCC itself, so nodes get them the
+next time they boot, without a rebuild.
 
 ## The admin password
 
