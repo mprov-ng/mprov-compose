@@ -234,9 +234,9 @@ docker compose restart jobserver
 
 The second command reads the token from standard input: paste the value
 after `token:` from the first command's output, then press Ctrl-D. The token
-works once, within 24 hours. Then revoke the lost certificate in the mPCC
-admin, under Agent Identities → Agent Credentials ("Revoke selected
-credentials"), since its key is gone with the volume.
+works once, within 24 hours. Enrolling again revokes the lost certificate,
+so its key can't be used even if a copy turns up; it shows as revoked in the
+mPCC admin, under Agent Identities → Agent Credentials.
 
 ## The job server's config files
 
