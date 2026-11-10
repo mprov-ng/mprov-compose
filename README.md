@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.1` with job server `v0.7.1`).
+pair from the same major.minor (e.g. mPCC `v0.7.2` with job server `v0.7.1`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -195,6 +195,19 @@ Then, on the nodes' side:
 
 The other node-side fixes come from the mPCC itself, so nodes get them the
 next time they boot, without a rebuild.
+
+## Upgrading to 0.7.2
+
+0.7.2 is an mPCC-only bug-fix release; the job server stays at `v0.7.1`.
+Deleting a system, NIC or BMC, or changing a switch, now updates the DHCP
+and DNS config, and saving a host only regenerates it when something that
+affects it changed. The
+[mPCC release notes](https://github.com/mprov-ng/mprov_control_center/releases/tag/v0.7.2)
+have the details. If you're coming from before 0.7.1, do "Upgrading to
+0.7.1" above first.
+
+Nothing in `.env` has to change, and nodes don't need their images rebuilt.
+Upgrade as in "Image versions" above.
 
 ## The admin password
 
