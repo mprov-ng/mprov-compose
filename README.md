@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.2` with job server `v0.7.1`).
+pair from the same major.minor (e.g. mPCC `v0.7.3` with job server `v0.7.1`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -208,6 +208,18 @@ have the details. If you're coming from before 0.7.1, do "Upgrading to
 
 Nothing in `.env` has to change, and nodes don't need their images rebuilt.
 Upgrade as in "Image versions" above.
+
+## Upgrading to 0.7.3
+
+0.7.3 is another mPCC-only bug-fix release; the job server stays at
+`v0.7.1`. Paging through the Systems list (and the other admin lists with
+live search) no longer jumps back to page 1. The
+[mPCC release notes](https://github.com/mprov-ng/mprov_control_center/releases/tag/v0.7.3)
+have the details.
+
+Nothing in `.env` has to change, and nodes don't need their images rebuilt.
+Upgrade as in "Image versions" above, then hard-refresh (Ctrl+Shift+R) an
+admin list page so the browser picks up the new script.
 
 ## The admin password
 
