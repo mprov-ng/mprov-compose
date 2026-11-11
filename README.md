@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.3` with job server `v0.7.1`).
+pair from the same major.minor (e.g. mPCC `v0.7.4` with job server `v0.7.1`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -220,6 +220,22 @@ have the details.
 Nothing in `.env` has to change, and nodes don't need their images rebuilt.
 Upgrade as in "Image versions" above, then hard-refresh (Ctrl+Shift+R) an
 admin list page so the browser picks up the new script.
+
+## Upgrading to 0.7.4
+
+0.7.4 is another mPCC-only release; the job server stays at `v0.7.1`.
+"Rebuild selected images now" on the System Images list no longer builds
+each image twice, and a migration clears the leftover rebuild flag on any
+image it already affected. It also adds where each System Group comes from
+to a system's Rendered Config tab, and lists a System Group's System Images
+on its admin page. The
+[mPCC release notes](https://github.com/mprov-ng/mprov_control_center/releases/tag/v0.7.4)
+have the details.
+
+Nothing in `.env` has to change, and nodes don't need their images rebuilt.
+Upgrade as in "Image versions" above (the migration runs when the mPCC
+starts), then hard-refresh (Ctrl+Shift+R) an admin page so the browser picks
+up the new scripts and styles.
 
 ## The admin password
 
