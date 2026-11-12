@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.5` with job server `v0.7.2`).
+pair from the same major.minor (e.g. mPCC `v0.7.6` with job server `v0.7.3`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -258,6 +258,39 @@ Nothing in `.env` has to change, and nodes don't need their images rebuilt.
 Upgrade as in "Image versions" above (the mPCC's migration runs when it
 starts), then hard-refresh (Ctrl+Shift+R) an admin page so the browser picks
 up the new styles.
+
+## Upgrading to 0.7.6 (job server 0.7.3)
+
+This upgrades both images: the mPCC to `v0.7.6` and the job server to
+`v0.7.3`. They're still on the same major.minor, so they work together.
+
+**Before you upgrade, make sure no two switches share a hostname** (ignoring
+case). Switch hostnames are now unique, and if any are duplicated the mPCC's
+migration stops before changing anything and lists the switches involved.
+Rename or delete the extras under Network Management > Switches on your
+current version, then upgrade.
+
+- mPCC 0.7.6: switches and network interfaces get an optional InfiniBand
+  GUID, a switch's management IP and MAC are now optional (for unmanaged
+  InfiniBand switches), and nodes can record their own interfaces and the
+  switches they're plugged into. Saving a switch only queues DHCP/DNS/PXE
+  jobs when something they use changed. The
+  [mPCC release notes](https://github.com/mprov-ng/mprov_control_center/releases/tag/v0.7.6)
+  have the details.
+- Job server 0.7.3: a DNS entry for an interface with aliases but no IP
+  address is now written as a warning comment instead of a broken line, and
+  the DNS and DHCP host directories get a `.README` explaining which files
+  the job server manages. It also adds an optional `ib-discover` module that
+  records the InfiniBand fabric in the mPCC. It's off by default; to use it
+  in this stack you'd enable it in the job server's config and pass
+  `/dev/infiniband` into the `jobserver` container. The
+  [job server release notes](https://github.com/mprov-ng/mprov_jobserver/releases/tag/v0.7.3)
+  have the details.
+
+Nothing in `.env` has to change, and nodes don't need their images rebuilt.
+Upgrade as in "Image versions" above (the mPCC's migrations run when it
+starts), then hard-refresh (Ctrl+Shift+R) an admin page so the browser picks
+up the new forms.
 
 ## The admin password
 
