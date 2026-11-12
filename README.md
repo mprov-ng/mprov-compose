@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.4` with job server `v0.7.1`).
+pair from the same major.minor (e.g. mPCC `v0.7.5` with job server `v0.7.2`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -236,6 +236,28 @@ Nothing in `.env` has to change, and nodes don't need their images rebuilt.
 Upgrade as in "Image versions" above (the migration runs when the mPCC
 starts), then hard-refresh (Ctrl+Shift+R) an admin page so the browser picks
 up the new scripts and styles.
+
+## Upgrading to 0.7.5 (job server 0.7.2)
+
+This upgrades both images: the mPCC to `v0.7.5` and the job server to
+`v0.7.2`. They're still on the same major.minor, so they work together.
+
+- mPCC 0.7.5: a staff user with the right API Token permissions can now make
+  a token for another staff user whose permissions are a subset of their
+  own, and a new "Made By" field records who made it. Staff without those
+  permissions keep managing only their own token. The Rendered Config tab
+  now uses the full width and wraps long values. The
+  [mPCC release notes](https://github.com/mprov-ng/mprov_control_center/releases/tag/v0.7.5)
+  have the details.
+- Job server 0.7.2: a freshly built image now registers its job server right
+  after the build, instead of waiting for the job server's next poll. The
+  [job server release notes](https://github.com/mprov-ng/mprov_jobserver/releases/tag/v0.7.2)
+  have the details.
+
+Nothing in `.env` has to change, and nodes don't need their images rebuilt.
+Upgrade as in "Image versions" above (the mPCC's migration runs when it
+starts), then hard-refresh (Ctrl+Shift+R) an admin page so the browser picks
+up the new styles.
 
 ## The admin password
 
