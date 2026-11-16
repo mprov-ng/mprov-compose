@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.7` with job server `v0.7.3`).
+pair from the same major.minor (e.g. mPCC `v0.7.7` with job server `v0.7.4`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -305,6 +305,21 @@ have the details.
 
 Nothing in `.env` has to change, and nodes don't need their images rebuilt.
 Upgrade as in "Image versions" above.
+
+## Upgrading to job server 0.7.4
+
+0.7.4 is a job-server-only release; the mPCC stays at `v0.7.7`. It updates
+dnspython to 2.9.2 for a security fix
+([GHSA-vvf4-9x63-8xvv](https://github.com/advisories/GHSA-vvf4-9x63-8xvv)),
+and the script runner now prefixes each line of a script's output with the
+script's name, and ends with its exit code, so scripts running at the same
+time can be told apart in the log. The
+[job server release notes](https://github.com/mprov-ng/mprov_jobserver/releases/tag/v0.7.4)
+have the details.
+
+Nothing in `.env` has to change. Upgrade as in "Image versions" above. Nodes
+keep working without a rebuild; their script output only gets the new
+prefixes once their images are rebuilt.
 
 ## The admin password
 
