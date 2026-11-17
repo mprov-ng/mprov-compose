@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.7` with job server `v0.7.4`).
+pair from the same major.minor (e.g. mPCC `v0.7.7` with job server `v0.7.5`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -320,6 +320,19 @@ have the details.
 Nothing in `.env` has to change. Upgrade as in "Image versions" above. Nodes
 keep working without a rebuild; their script output only gets the new
 prefixes once their images are rebuilt.
+
+## Upgrading to job server 0.7.5
+
+0.7.5 is a job-server-only bug-fix release; the mPCC stays at `v0.7.7`.
+dnsmasq's DNS and DHCP config now points at the job server's
+`mprovDnsmasqDir` setting, instead of always at `/var/lib/mprov/dns` and
+`/var/lib/mprov/dhcp`. This only matters if you've changed
+`mprovDnsmasqDir`: with the default the generated config is the same. The
+[job server release notes](https://github.com/mprov-ng/mprov_jobserver/releases/tag/v0.7.5)
+have the details.
+
+Nothing in `.env` has to change, and nodes don't need their images rebuilt.
+Upgrade as in "Image versions" above.
 
 ## The admin password
 
