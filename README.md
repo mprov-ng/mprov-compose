@@ -74,7 +74,7 @@ to PXE.
 ## Image versions
 
 `docker-compose.yml` pins the mPCC and job server images to release tags, a
-pair from the same major.minor (e.g. mPCC `v0.7.7` with job server `v0.7.5`).
+pair from the same major.minor (e.g. mPCC `v0.7.8` with job server `v0.7.5`).
 They have to match: the mPCC refuses a job server from another major.minor
 with a `426`, and the job server won't run against it. The images used to
 track `:dev` and `:latest`, which pulled whatever had been built last and
@@ -333,6 +333,32 @@ have the details.
 
 Nothing in `.env` has to change, and nodes don't need their images rebuilt.
 Upgrade as in "Image versions" above.
+
+## Upgrading to 0.7.8
+
+0.7.8 is an mPCC-only release; the job server stays at `v0.7.5`.
+
+**Before you upgrade, make sure no system has two network interfaces with
+the same name** (ignoring case). Interface names are now unique on each
+system, and if any are duplicated the mPCC's migration stops before
+changing anything and lists the interfaces involved. Rename or delete the
+extras on the system's page in the admin on your current version, then
+upgrade.
+
+- A switch port and the network interface it's linked to now keep the same
+  network when either is saved in the admin or through the API, and a
+  network-less port a node links its interface to takes the interface's
+  network.
+- A new Switch Ports list in the admin, with a bulk "Set network for these
+  switch ports" action.
+
+The
+[mPCC release notes](https://github.com/mprov-ng/mprov_control_center/releases/tag/v0.7.8)
+have the details.
+
+Nothing in `.env` has to change, and nodes don't need their images rebuilt.
+Upgrade as in "Image versions" above (the mPCC's migration runs when it
+starts).
 
 ## The admin password
 
